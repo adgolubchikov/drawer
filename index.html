@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta id="viewport" name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<title>Drawer</title>
+<style type="text/css">
+#canvas
+  {
+  position:absolute;
+  top:0px;
+  left:0px;
+  }
+.map
+  {
+  display:none;
+  }
+
+button
+  {
+  -webkit-user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  }
+</style>
+<script>
+function id(e){return document.getElementById(e)}
+function fullscreen(e){e.height=innerHeight;e.width=innerWidth}
+function set_wh(w,h)
+  {
+  id('viewport').setAttribute('content','width='+w+', height='+h+', initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0');
+  id('canvas').width=w;
+  id('canvas').height=h;
+  }
+</script>
+</head>
+<body>
+<a style="display:none" id="save" download="picture.png"></a>
+<button id="mode" style="z-index:2;position:absolute" onclick="mode_move()">MOVE</button>
+<button id="bsave" style="z-index:2;position:absolute" onclick="save()">SAVE</button>
+<button id="set" style="z-index:2;position:absolute" onclick="settings()">SET</button>
+<canvas id="canvas" height="200" width="200"></canvas>
+<div id="settings" style="display:none">
+Colour: <input type="text" id="color" value="black" size="7" /><br/>
+enter colour name or code #rrggbb, where rr, gg and bb are HEX. <br/>
+Line width: <input type="text" id="width" value="1" size="2" /><br/>
+(in pixels)
+</div>
+<script>
+context=id('canvas').getContext('2d');
+w=parseInt(prompt('Image width (pixels):',innerWidth));
+h=parseInt(prompt('Image height (pixels):',innerHeight));
+
+set_wh(w,h);
+buttons();
+
+
+function buttons()
+  {
+  y=pageYOffset;
+  x=pageXOffset;
+  id('mode').style.top=(20+y)+'px';
+  id('mode').style.left=(20+x)+'px';
+  id('bsave').style.top=(y+innerHeight-20-id('bsave').offsetHeight)+'px';
+  id('bsave').style.left=(20+x)+'px';
+  id('set').style.top=(20+y)+'px';
+  id('set').style.left=(x+innerWidth-20-id('set').offsetWidth)+'px';
+  }
+
+function mode_paint()
+  {
+  id('mode').onclick=mode_move;
+  id('mode').innerHTML='MOVE';
+  window.lastx=0;
+  window.lasty=0;
+  id('canvas').onmousedown=function(e)
+    {
+    lastx=e.pageX;
+    lasty=e.pageY;
+
+    document.onmousemove=function(e)
+      {
+      context.beginPath();
+      context.moveTo(lastx,lasty);
+      if ((e.pageX>lastx) && (e.pageY>lasty))
+        {
+        //up and right
+        context.lineTo(e.pageX+context.lineWidth/2,e.pageY+context.lineWidth/2);
+        }
+      else
+        {
+        if ((e.pageX>lastx) && (e.pageY<=lasty))
+          {
+          //down and right
+          context.lineTo(e.pageX+context.lineWidth/2,e.pageY-context.lineWidth/2);
+          }
+        else
+          {
+          if ((e.pageX<=lastx) && (e.pageY>lasty))
+            {
+            context.lineTo(e.pageX-context.lineWidth/2,e.pageY+context.lineWidth/2);
+            }
+          else
+            {
+            context.lineTo(e.pageX-context.lineWidth/2,e.pageY-context.lineWidth/2);
+            }
+          }
+        }
+      window.lastx=e.pageX; window.lasty=e.pageY;
+      context.stroke();
+      }
+    }
+  document.onmouseup=function(e)
+    {
+    buttons();
+    document.onmousemove=function(e){};
+    }
+
+
+
+  id('canvas').ontouchstart=function(e)
+    {
+    e.preventDefault();
+    lastx=e.targetTouches[0].pageX;
+    lasty=e.targetTouches[0].pageY;
+
+    document.ontouchmove=function(e)
+      {
+      e.preventDefault();
+      context.beginPath();
+      context.moveTo(lastx,lasty);
+      if ((e.targetTouches[0].pageX>lastx) && (e.targetTouches[0].pageY>lasty))
+        {
+        context.lineTo(e.targetTouches[0].pageX+context.lineWidth/2,e.targetTouches[0].pageY+context.lineWidth/2);
+        }
+      else
+        {
+        if ((e.targetTouches[0].pageX>lastx) && (e.targetTouches[0].pageY<=lasty))
+          {
+          context.lineTo(e.targetTouches[0].pageX+context.lineWidth/2,e.targetTouches[0].pageY-context.lineWidth/2);
+          }
+        else
+          {
+          if ((e.targetTouches[0].pageX<=lastx) && (e.targetTouches[0].pageY>lasty))
+            {
+            context.lineTo(e.targetTouches[0].pageX-context.lineWidth/2,e.targetTouches[0].pageY+context.lineWidth/2);
+            }
+          else
+            {
+            context.lineTo(e.targetTouches[0].pageX-context.lineWidth/2,e.targetTouches[0].pageY-context.lineWidth/2);
+            }
+          }
+        }
+      window.lastx=e.targetTouches[0].pageX; window.lasty=e.targetTouches[0].pageY;
+      context.stroke();
+      }
+    }
+  document.ontouchend=function(e)
+    {
+    buttons();
+    document.ontouchmove=function(e){};
+    }
+  }
+
+function mode_move()
+  {
+  id('mode').onclick=mode_paint;
+  id('mode').innerHTML='PAINT';
+
+  id('canvas').onmousedown=function(e)
+    {
+
+  document.onmousemove=function(e)
+    {
+
+    }
+    }
+  document.onmouseup=function(e)
+    {
+    buttons();
+    document.onmousemove=function(e){};
+    }
+
+
+
+  id('canvas').ontouchstart=function(e)
+    {
+    document.ontouchmove=function(e)
+      {
+
+      }
+    }
+  document.ontouchend=function(e)
+    {
+    buttons();
+    document.ontouchmove=function(e){};
+    }
+  }
+
+function save()
+  {
+  id('save').href=id('canvas').toDataURL();
+  id('save').click();
+  }
+
+function settings()
+  {
+  id('set').innerHTML='HIDE';
+  id('set').onclick=hidesettings;
+  id('canvas').style.display='none';
+  id('mode').style.display='none';
+  id('bsave').style.display='none';
+
+  id('settings').style.display='block';
+  }
+
+function hidesettings()
+  {
+  update();
+
+  id('set').innerHTML='SET';
+  id('set').onclick=settings;
+  id('canvas').style.display='block';
+  id('mode').style.display='block';
+  id('bsave').style.display='block';
+
+  id('settings').style.display='none';
+  }
+
+function update()
+  {
+  context.strokeStyle=id('color').value;
+  context.lineWidth=parseInt(id('width').value);
+  }
+</script>
+<script>
+mode_paint();
+</script>
+</body>
+</html>
